@@ -1,53 +1,12 @@
-# Next.js & HeroUI Template
+# Next.js & HeroUI Editor
 
-This is a template for creating applications using Next.js 14 (app directory) and HeroUI (v2).
+Este é um frontend para editor de artigos, com armazenamento no LocalStorage.
 
-[Try it on CodeSandbox](https://githubbox.com/heroui-inc/heroui/next-app-template)
+![landingpage](https://github.com/user-attachments/assets/cedc40cc-bbd5-4409-8307-9ba4bc444e4b)
+![editor](https://github.com/user-attachments/assets/db4378c3-8384-4cbd-9ac4-f8b49643f1ac)
 
-## Technologies Used
+Foi construido com:
+- ✅ Nextjs
+- ✅ HeroUI (NextUI)
+- ✅ LocalStorage
 
-- [Next.js 14](https://nextjs.org/docs/getting-started)
-- [HeroUI v2](https://heroui.com/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Tailwind Variants](https://tailwind-variants.org)
-- [TypeScript](https://www.typescriptlang.org/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [next-themes](https://github.com/pacocoursey/next-themes)
-
-## How to Use
-
-### Use the template with create-next-app
-
-To create a new project based on this template using `create-next-app`, run the following command:
-
-```bash
-npx create-next-app -e https://github.com/heroui-inc/next-app-template
-```
-
-### Install dependencies
-
-You can use one of them `npm`, `yarn`, `pnpm`, `bun`, Example using `npm`:
-
-```bash
-npm install
-```
-
-### Run the development server
-
-```bash
-npm run dev
-```
-
-### Setup pnpm (optional)
-
-If you are using `pnpm`, you need to add the following code to your `.npmrc` file:
-
-```bash
-public-hoist-pattern[]=*@heroui/*
-```
-
-After modifying the `.npmrc` file, you need to run `pnpm install` again to ensure that the dependencies are installed correctly.
-
-## License
-
-Licensed under the [MIT license](https://github.com/heroui-inc/next-app-template/blob/main/LICENSE).
