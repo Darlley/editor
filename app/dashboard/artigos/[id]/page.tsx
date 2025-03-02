@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 
 import { PostType } from "@/types/PostType";
@@ -33,6 +34,7 @@ import { Tooltip } from "@heroui/tooltip";
 import { Input, Textarea } from "@heroui/input";
 import { Image } from "@heroui/image";
 import { Spinner } from "@heroui/spinner";
+import NovelEditor from "@/components/NovelEditor/NovelEditor";
 
 const EDITOR_INITIAL_VALUE: JSONContent = {
   type: "doc",
@@ -159,8 +161,7 @@ export default function editor({ id }: { id: string }) {
             </div>
           </div>
           <div className="flex-grow p-6 max-h-full overflow-y-auto text-sm">
-            {/* <NovelEditor initialValue={EDITOR_INITIAL_VALUE} onChange={console.log} /> */}
-            NovelEditor
+            <NovelEditor initialValue={EDITOR_INITIAL_VALUE} onChange={console.log} />
           </div>
         </div>
         <div className="w-[380px] flex flex-col gap-4 lg:gap-6 p-4 border-l dark:border-gray-900 h-full max-h-full overflow-y-auto">
