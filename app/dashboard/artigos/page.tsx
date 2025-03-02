@@ -21,6 +21,7 @@ import { Image } from '@heroui/image';
 import {Tooltip} from "@heroui/tooltip";
 import { Chip } from '@heroui/chip';
 import {Spinner} from "@heroui/spinner";
+import { v4 as uuidv4 } from 'uuid';
 
 import { PostType } from '@/types/PostType';
 
@@ -52,13 +53,122 @@ const columns = [
 ];
 
 export default function Page() {
-  const [posts, setPosts] = useState<PostType[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [posts, setPosts] = useState<PostType[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [selected, setSelected] = useState({ published: true });
+  const [mdContent, setMdContent] = useState({});
+  const [htmlContent, setHtmlContent] = useState("");
+  const [currentArticle, setCurrentArticle] = useState<PostType | null>(null);
+  const [title, setTitle] = useState("");
+  const [isSavedNotificationShow, setIsSavedNotificationShow] = useState(false);
 
+  // Fetch all articles from localStorage
+  const fetchArticles = () => {
+    setIsLoading(true);
+    try {
+      const storedArticles = JSON.parse(localStorage.getItem("articles") || "[]");
+      setPosts(storedArticles);
+    } catch (error) {
+      console.error("Error fetching articles:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
+  // Initialize data
+  useEffect(() => {
+    fetchArticles();
+  }, []);
+
+  // Create a new article
   async function createArticle() {
+    const newArticle: PostType = {
+      id: uuidv4(),
+      title: "Novo Artigo",
+      content: "",
+      description: "Descrição do artigo",
+      slug: `artigo-${Date.now()}`,
+      thumbnail: "/default.png",
+      status: "ARCHIVED", // Draft by default
+      audience: "CLIENTS",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      userId: "user-1", // Replace with actual user ID
+      siteId: "site-1", // Replace with actual site ID
+    };
     
+    const existingArticles = JSON.parse(localStorage.getItem("articles") || "[]");
+    const updatedArticles = [...existingArticles, newArticle];
+    
+    localStorage.setItem("articles", JSON.stringify(updatedArticles));
+    fetchArticles();
+    
+    return newArticle.id;
   }
+
+  // Get a single article by ID
+  const getArticleById = (id: string) => {
+    const articles = JSON.parse(localStorage.getItem("articles") || "[]");
+    return articles.find((article: PostType) => article.id === id) || null;
+  };
+
+  // Update an existing article
+  const updateArticle = (updatedArticle: PostType) => {
+    const articles = JSON.parse(localStorage.getItem("articles") || "[]");
+    const updatedArticles = articles.map((article: PostType) => 
+      article.id === updatedArticle.id ? updatedArticle : article
+    );
+    
+    localStorage.setItem("articles", JSON.stringify(updatedArticles));
+    fetchArticles();
+    setIsSavedNotificationShow(true);
+    setTimeout(() => {
+      setIsSavedNotificationShow(false);
+    }, 3000);
+  };
+
+  // Delete an article
+  const deleteArticle = (id: string) => {
+    if (confirm("Tem certeza que deseja excluir este artigo?")) {
+      const articles = JSON.parse(localStorage.getItem("articles") || "[]");
+      const filteredArticles = articles.filter((article: PostType) => article.id !== id);
+      
+      localStorage.setItem("articles", JSON.stringify(filteredArticles));
+      fetchArticles();
+    }
+  };
+
+  // Toggle article status (Published/Draft)
+  const toggleArticleStatus = (id: string) => {
+    const article = getArticleById(id);
+    if (article) {
+      const updatedArticle = {
+        ...article,
+        status: article.status === "PUBLISHED" ? "ARCHIVED" : "PUBLISHED",
+        updatedAt: new Date().toISOString()
+      };
+      updateArticle(updatedArticle);
+    }
+  };
+
+  // Toggle audience (Clients/Employees)
+  const toggleArticleAudience = (id: string) => {
+    const article = getArticleById(id);
+    if (article) {
+      const updatedArticle = {
+        ...article,
+        audience: article.audience === "CLIENTS" ? "EMPLOYEES" : "CLIENTS",
+        updatedAt: new Date().toISOString()
+      };
+      updateArticle(updatedArticle);
+    }
+  };
+
+  // Handle navigation to editor with article ID
+  const handleCreateAndRedirect = async () => {
+    const newId = await createArticle();
+    window.location.href = `/dashboard/editor?articleId=${newId}`;
+  };
 
   return (
     <div className="flex flex-1 flex-col gap-4 lg:gap-6 p-4 lg:p-6">
@@ -85,13 +195,18 @@ export default function Page() {
           <Button
             endContent={<Plus />}
             color="primary"
-            as={Link}
-            href='dashboard/editor'
+            onPress={handleCreateAndRedirect}
           >
             <span>Criar artigo</span>
           </Button>
         </div>
       </div>
+
+      {isSavedNotificationShow && (
+        <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-4" role="alert">
+          <p>Artigo salvo com sucesso!</p>
+        </div>
+      )}
 
       <Table
         aria-label="Tabela de artigos"
@@ -129,8 +244,7 @@ export default function Page() {
               <Button
                 endContent={<Plus />}
                 color="primary"
-                as={Link}
-                href="dashboard/editor"
+                onClick={handleCreateAndRedirect}
               >
                 Criar post
               </Button>
@@ -159,7 +273,7 @@ export default function Page() {
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-4">
-                  {item?.status == 'PUBLISHED' ? (
+                  {item?.status === 'PUBLISHED' ? (
                     <Chip
                       startContent={
                         <CheckCircle className="size-4 stroke-[1.5]" />
@@ -167,22 +281,37 @@ export default function Page() {
                       variant="faded"
                       color="success"
                       className="dark:bg-green-950 bg-success text-green-100 border-green-500"
+                      onClick={() => toggleArticleStatus(item.id)}
                     >
                       Publicado
                     </Chip>
                   ) : (
-                    <Chip variant="dot">Rascunho</Chip>
+                    <Chip 
+                      variant="dot"
+                      onClick={() => toggleArticleStatus(item.id)}
+                    >
+                      Rascunho
+                    </Chip>
                   )}
                 </div>
               </TableCell>
               <TableCell>
                 <div className="flex items-center gap-4">
-                  {item?.audience == 'CLIENTS' ? (
-                    <Chip variant="dot" color="primary">
+                  {item?.audience === 'CLIENTS' ? (
+                    <Chip 
+                      variant="dot" 
+                      color="primary"
+                      onClick={() => toggleArticleAudience(item.id)}
+                    >
                       Clientes
                     </Chip>
                   ) : (
-                    <Chip variant="dot">Colaborador</Chip>
+                    <Chip 
+                      variant="dot"
+                      onClick={() => toggleArticleAudience(item.id)}
+                    >
+                      Colaborador
+                    </Chip>
                   )}
                 </div>
               </TableCell>
@@ -201,8 +330,10 @@ export default function Page() {
                         size="sm"
                         isIconOnly
                         target="_blank"
+                        as={Link}
+                        href={`/articles/${item.slug}`}
                       >
-                        <Link2 className="size-4 stroke-1" />
+                        <Eye className="size-4 stroke-1" />
                       </Button>
                     </Tooltip>
 
@@ -220,6 +351,7 @@ export default function Page() {
                     <Button
                       size="sm"
                       isIconOnly
+                      onClick={() => deleteArticle(item.id)}
                     >
                       <Trash className="size-4 stroke-1" />
                     </Button>
