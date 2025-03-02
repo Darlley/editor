@@ -82,9 +82,15 @@ export default function Page() {
 
   // Create a new article
   async function createArticle() {
+    const existingArticles = JSON.parse(localStorage.getItem("articles") || "[]");
+
+    console.log({
+      existingArticles
+    })
+
     const newArticle: PostType = {
       id: uuidv4(),
-      title: "Novo Artigo",
+      title: `Novo Artigo #${existingArticles.length}`,
       content: "",
       description: "Descrição do artigo",
       slug: `artigo-${Date.now()}`,
@@ -93,11 +99,8 @@ export default function Page() {
       audience: "CLIENTS",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      userId: "user-1", // Replace with actual user ID
-      siteId: "site-1", // Replace with actual site ID
     };
     
-    const existingArticles = JSON.parse(localStorage.getItem("articles") || "[]");
     const updatedArticles = [...existingArticles, newArticle];
     
     localStorage.setItem("articles", JSON.stringify(updatedArticles));
@@ -167,7 +170,7 @@ export default function Page() {
   // Handle navigation to editor with article ID
   const handleCreateAndRedirect = async () => {
     const newId = await createArticle();
-    window.location.href = `/dashboard/editor?articleId=${newId}`;
+    window.location.href = `/dashboard/artigos/${newId}`;
   };
 
   return (
@@ -179,7 +182,7 @@ export default function Page() {
             size="sm"
             variant="flat"
             as={Link}
-            href={`/dashboard/sites`}
+            href="/dashboard/sites"
           >
             <ChevronLeft className="stroke-1 size-4" />
           </Button>

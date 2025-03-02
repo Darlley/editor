@@ -9,6 +9,4 @@ export type PostType = {
   audience: "CLIENTS" | "EMPLOYEES";
   createdAt: string;
   updatedAt: string;
-  userId: string;
-  siteId: string;
 };
